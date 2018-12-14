@@ -1,9 +1,12 @@
 from PIL import Image
 from utils.quadrants import Quadrants
+from utils.utils import make_blocks
 import matplotlib.pyplot as plt
 import stream.video as video
 
-video.init_stream()
+pix2quad = 10
+blocks = make_blocks(pix2quad)
+video.init_stream(pix2quad, blocks)
 # image = Image.open('examples/images/1.jpg')
 # image = image.resize((10, 10))
 # image.save('examples/blocks/1.jpg', "JPEG")
