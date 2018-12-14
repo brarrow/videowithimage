@@ -1,8 +1,8 @@
 import cv2
-from utils.utils import get_diff, choose_quad
+
 from utils.quadrants import Quadrants
-import numpy as np
-from PIL import Image
+from utils.utils import get_diff, choose_quad
+
 
 def skip_frames(cap, count):
     for i in range(count):
@@ -13,7 +13,7 @@ def all_quads(qimage, qimage2, blocks):
     for x in range(qimage.qshape[1]):
         for y in range(qimage.qshape[0]):
             if qimage.get_bright(x,y) > 1000:
-                image = choose_quad(blocks, qimage2)
+                image = choose_quad(blocks, qimage2.get_quad(x, y, orig=True))
                 qimage2.set_quad(x,y, image)
     return qimage2
 
@@ -29,17 +29,18 @@ def init_stream(pix2quad, blocks):
     vid_out = cv2.VideoWriter('examples/results/out.avi', fourcc, int(vid_inp.get(cv2.CAP_PROP_FPS))
                               ,(int(vid_inp.get(cv2.CAP_PROP_FRAME_WIDTH)), int(vid_inp.get(cv2.CAP_PROP_FRAME_HEIGHT))))
     ret, frame1 = vid_inp.read()
-    res = frame1
+    res = frame1[:, :, ::-1]
     while (vid_inp.isOpened()):
         ret, frame2 = vid_inp.read()
+        frame2 = frame2[:, :, ::-1]
 
         if(ret):
             colordiff, graydiff = get_diff(frame1, frame2)
             qres = Quadrants(graydiff, pix2quad)
-            qres2 = Quadrants(res, pix2quad, colordiff)
+            qres2 = Quadrants(res, pix2quad, frame2)
             all_quads(qres, qres2, blocks)
-            res = qres2.image.copy()
-            cv2.imshow('res', res)
+            res = qres2.image
+            cv2.imshow('res', res[:, :, ::-1])
             frame1 = frame2.copy()
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break

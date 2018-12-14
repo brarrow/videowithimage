@@ -1,9 +1,10 @@
+import os
+
 import cv2
 import numpy as np
 from PIL import Image
+
 from utils.blocks import Block
-import os
-import random
 
 
 def make_blocks(pix2quad):
@@ -17,9 +18,17 @@ def make_blocks(pix2quad):
         image.save(pathout+filename, "JPEG")
     return blocks
 
-def choose_quad(blocks, quadorig):
-    blocks_size = len(blocks)
-    return blocks[random.randint(0,blocks_size-1)].image
+
+def choose_quad(blocks, qimage):
+    qimg_means = np.array([np.mean(qimage[:, :, 0]), np.mean(qimage[:, :, 1]), np.mean(qimage[:, :, 2])])
+    ibest = 0
+    resbest = np.inf
+    for i, el in enumerate(blocks):
+        dist = np.sqrt(np.sum(np.abs(qimg_means - el.bl_means) ** 2))
+        if dist < resbest:
+            resbest = dist
+            ibest = i
+    return blocks[ibest].image
 
 # do your stuff
 
